@@ -1,5 +1,5 @@
 ##setup!
-$apiURL = "http://verfy-cor-dev02:15672/api";
+$apiURL = "http://verfy-cor-dev02:15672/api"; #change URL
 $apiUsername = "guest";
 $apiPassword = "guest";
 $envName = "dev";
@@ -74,7 +74,16 @@ $response = Invoke-WebRequest -Uri $queueURL -Headers $headers -Method Put -Cont
 [console]::Writeline("queue {0} created (if it didn't already exist) on vhost {1}", $queueNameES, $vhost);
 
 #step 7: bind exchange AuthComplete to queue AuthComplete.EPCIS
-$bindURL = $apiURL + "/bindings/" + $vhost + "/" + $queueNameEPCIS + "/" + $exchangeName;
-echo $bindURL;
+$bindURL = [string]::Format("{0}/bindings/{1}/e/{2}/q/{3}", $apiURL, $vhost, $exchangeName, $queueNameEPCIS);
+#echo $bindURL;
 $body = "{""routing_key"":"""",""arguments"":[]}";
-Invoke-WebRequest -Uri $bindURL -Headers $headers -Method Post -ContentType "application/json" -Body $body
+$response = Invoke-WebRequest -Uri $bindURL -Headers $headers -Method Post -ContentType "application/json" -Body $body
+[console]::Writeline("exchange {0} bound to {1} on vhost {2}", $exchangeName, $queueNameEPCIS, $vhost);
+
+
+#step 8: bind exchange AuthComplete to queue AuthComplete.ElasticSearch
+$bindURL = [string]::Format("{0}/bindings/{1}/e/{2}/q/{3}", $apiURL, $vhost, $exchangeName, $queueNameES);
+#echo $bindURL;
+$body = "{""routing_key"":"""",""arguments"":[]}";
+$response = Invoke-WebRequest -Uri $bindURL -Headers $headers -Method Post -ContentType "application/json" -Body $body
+[console]::Writeline("exchange {0} bound to {1} on vhost {2}", $exchangeName, $queueNameES, $vhost);
